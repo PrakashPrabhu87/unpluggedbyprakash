@@ -65,11 +65,25 @@
 </main>
 <footer><div class="wrap footer-inner"><span>© <span id="year"></span> Prakash Prabhu</span><div class="footer-social"><a class="instagram-link" href="https://www.instagram.com/unpluggedbyprakash/" target="_blank" rel="noopener noreferrer" aria-label="Visit Unplugged by Prakash on Instagram"><svg class="instagram-icon" xmlns="http://www.w3.org/2000/svg" width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".8" fill="currentColor" stroke="none"/></svg><span>Follow on Instagram</span><span aria-hidden="true">↗</span></a></div></div></footer>
 <script>
-// Add only reviews you have permission to publish. Example:
-// { quote: 'A wonderful performance!', name: 'Jane D.', detail: 'Private event' }
-const REVIEWS = [];
+// Reviews are loaded from reviews.json so you never need to edit HTML to add one.
 const reviewList = document.getElementById('reviews-list');
-if (REVIEWS.length) { for (const r of REVIEWS) { const el=document.createElement('article');el.className='review'; const mark=document.createElement('div');mark.className='quote-mark';mark.textContent='“';const p=document.createElement('p');p.textContent=r.quote;const name=document.createElement('strong');name.textContent=r.name;const detail=document.createElement('small');detail.textContent=r.detail||'';el.append(mark,p,name,detail);reviewList.append(el); } } else { const el=document.createElement('div');el.className='empty-reviews';el.textContent='Audience and client reviews coming soon.';reviewList.append(el); }
+function showReviews(reviews) {
+  reviewList.replaceChildren();
+  if (!reviews.length) { const empty=document.createElement('div');empty.className='empty-reviews';empty.textContent='Audience and client reviews coming soon.';reviewList.append(empty);return; }
+  for (const r of reviews) {
+    if (!r || typeof r.name!=='string' || typeof r.quote!=='string') continue;
+    const el=document.createElement('article');el.className='review';
+    const mark=document.createElement('div');mark.className='quote-mark';mark.textContent='“';
+    const quote=document.createElement('p');quote.textContent=r.quote;
+    const name=document.createElement('strong');name.textContent=r.name;
+    const detail=document.createElement('small');detail.textContent=r.detail||'';
+    el.append(mark,quote,name,detail);reviewList.append(el);
+  }
+}
+fetch('reviews.json', {cache:'no-store'})
+  .then(response=>{if(!response.ok)throw new Error('Could not load reviews');return response.json()})
+  .then(data=>{if(!Array.isArray(data))throw new Error('Invalid reviews file');showReviews(data)})
+  .catch(()=>{reviewList.textContent='Reviews are temporarily unavailable.'});
 document.getElementById('year').textContent=new Date().getFullYear();
 if('IntersectionObserver' in window){const obs=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');obs.unobserve(e.target)}}),{threshold:.08});document.querySelectorAll('.reveal').forEach(e=>obs.observe(e));}else{document.querySelectorAll('.reveal').forEach(e=>e.classList.add('visible'));}
 // IMPORTANT: Set up a Formspree form and replace this with your unique endpoint.
